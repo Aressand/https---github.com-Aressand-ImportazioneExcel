@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stato Processo - Dashboard Importazioni Excel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .output-container {
+            max-height: 500px;
+            overflow-y: auto;
+            background-color: #f8f9fc;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .status-badge {
+            font-size: 1.2rem;
+            padding: 10px 20px;
+        }
+        .process-details {
+            margin-bottom: 20px;
+        }
+        .process-details dt {
+            font-weight: 600;
+        }
+        .process-details dd {
+            margin-bottom: 10px;
+        }
+        .auto-scroll {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-5 d-none d-sm-inline">Gestione Importazioni</span>
+                    </a>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link align-middle px-0 text-white">
+                                <i class="fs-4 fas fa-tachometer-alt"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/nuova-importazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-file-import"></i> <span class="ms-1 d-none d-sm-inline">Nuova Importazione</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/importazioni" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-history"></i> <span class="ms-1 d-none d-sm-inline">Storico Importazioni</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/stato-processi" class="nav-link px-0 align-middle text-white active">
+                                <i class="fs-4 fas fa-tasks"></i> <span class="ms-1 d-none d-sm-inline">Processi Attivi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/configurazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-cogs"></i> <span class="ms-1 d-none d-sm-inline">Configurazione</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Contenuto principale -->
+            <div class="col py-3">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 text-gray-800">Dettaglio Processo</h1>
+                    <a href="/stato-processi" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Torna ai Processi
+                    </a>
+                </div>
+                
+                <!-- Card stato processo -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Processo ID: {{ process_id }}</h6>
+                        <div>
+                            {% if process.status == 'running' %}
+                                <span class="badge bg-primary status-badge">In Esecuzione</span>
+                            {% elif process.status == 'completed' %}
+                                <span class="badge bg-success status-badge">Completato</span>
+                            {% else %}
+                                <span class="badge bg-danger status-badge">Fallito</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row process-details">
+                            <dt class="col-sm-3">Tipo:</dt>
+                            <dd class="col-sm-9">
+                                {% if process.type == 'initial' %}
+                                    <i class="fas fa-database text-primary"></i> Importazione Iniziale
+                                {% elif process.type == 'monthly' %}
+                                    <i class="fas fa-calendar-alt text-success"></i> Importazione Mensile
+                                {% else %}
+                                    <i class="fas fa-file-excel text-info"></i> Importazione File Specifici
+                                {% endif %}
+                            </dd>
+                            
+                            <dt class="col-sm-3">Iniziato:</dt>
+                            <dd class="col-sm-9">{{ process.start_time }}</dd>
+                            
+                            {% if process.end_time %}
+                                <dt class="col-sm-3">Terminato:</dt>
+                                <dd class="col-sm-9">{{ process.end_time }}</dd>
+                                
+                                <dt class="col-sm-3">Durata:</dt>
+                                <dd class="col-sm-9" id="duration"></dd>
+                            {% endif %}
+                            
+                            {% if process.status != 'running' and process.return_code is defined %}
+                                <dt class="col-sm-3">Codice di uscita:</dt>
+                                <dd class="col-sm-9">
+                                    {% if process.return_code == 0 %}
+                                        <span class="text-success">{{ process.return_code }} (Successo)</span>
+                                    {% else %}
+                                        <span class="text-danger">{{ process.return_code }} (Errore)</span>
+                                    {% endif %}
+                                </dd>
+                            {% endif %}
+                            
+                            <dt class="col-sm-3">Comando:</dt>
+                            <dd class="col-sm-9">
+                                <code style="word-break: break-all;">{{ process.command }}</code>
+                            </dd>
+                        </dl>
+                        
+                        <h5 class="mt-4 mb-3">Output del processo:</h5>
+                        <div class="output-container" id="outputContainer">
+                            {% for line in process.output %}
+                                {% if "ERRORE" in line or "ERROR" in line %}
+                                    <div class="text-danger">{{ line }}</div>
+                                {% else %}
+                                    <div>{{ line }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        {% if process.status == 'running' %}
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" id="autoScrollCheckbox" checked>
+                                <label class="form-check-label" for="autoScrollCheckbox">
+                                    Scorri automaticamente verso il basso
+                                </label>
+                            </div>
+                            
+                            <button id="refreshBtn" class="btn btn-primary mt-3">
+                                <i class="fas fa-sync-alt"></i> Aggiorna Output
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="scrollToBottomBtn" class="btn btn-primary auto-scroll" style="display: none;">
+        <i class="fas fa-arrow-down"></i>
+    </button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Calcola durata
+            {% if process.start_time and process.end_time %}
+                const startTime = new Date('{{ process.start_time }}');
+                const endTime = new Date('{{ process.end_time }}');
+                const durationMs = endTime - startTime;
+                const durationSec = Math.floor(durationMs / 1000);
+                const minutes = Math.floor(durationSec / 60);
+                const seconds = durationSec % 60;
+                $('#duration').text(`${minutes} minuti e ${seconds} secondi`);
+            {% endif %}
+            
+            // Scorri automaticamente al fondo
+            const scrollToBottom = () => {
+                const outputContainer = document.getElementById('outputContainer');
+                outputContainer.scrollTop = outputContainer.scrollHeight;
+            };
+            
+            // Se il processo è in esecuzione, aggiorna l'output periodicamente
+            {% if process.status == 'running' %}
+                scrollToBottom();
+                
+                // Aggiorna ogni 3 secondi
+                const refreshInterval = setInterval(function() {
+                    $.ajax({
+                        url: '/api/processo/{{ process_id }}',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(data) {
+                            // Aggiorna lo stato
+                            if (data.status !== 'running') {
+                                clearInterval(refreshInterval);
+                                location.reload();
+                                return;
+                            }
+                            
+                            // Aggiorna l'output
+                            let html = '';
+                            data.output.forEach(line => {
+                                if (line.includes('ERRORE') || line.includes('ERROR')) {
+                                    html += `<div class="text-danger">${line}</div>`;
+                                } else {
+                                    html += `<div>${line}</div>`;
+                                }
+                            });
+                            
+                            $('#outputContainer').html(html);
+                            
+                            // Scorri verso il basso se l'opzione è selezionata
+                            if ($('#autoScrollCheckbox').is(':checked')) {
+                                scrollToBottom();
+                            }
+                        }
+                    });
+                }, 3000);
+                
+                // Pulsante aggiornamento manuale
+                $('#refreshBtn').click(function() {
+                    $.ajax({
+                        url: '/api/processo/{{ process_id }}',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(data) {
+                            // Aggiorna l'output
+                            let html = '';
+                            data.output.forEach(line => {
+                                if (line.includes('ERRORE') || line.includes('ERROR')) {
+                                    html += `<div class="text-danger">${line}</div>`;
+                                } else {
+                                    html += `<div>${line}</div>`;
+                                }
+                            });
+                            
+                            $('#outputContainer').html(html);
+                            scrollToBottom();
+                        }
+                    });
+                });
+            {% endif %}
+            
+            // Mostra il pulsante "scorri verso il basso" quando si scorre verso l'alto
+            const outputContainer = document.getElementById('outputContainer');
+            outputContainer.addEventListener('scroll', function() {
+                const scrollBtn = document.getElementById('scrollToBottomBtn');
+                if (outputContainer.scrollHeight - outputContainer.scrollTop > outputContainer.clientHeight + 50) {
+                    scrollBtn.style.display = 'block';
+                } else {
+                    scrollBtn.style.display = 'none';
+                }
+            });
+            
+            // Scorri verso il basso quando si preme il pulsante
+            document.getElementById('scrollToBottomBtn').addEventListener('click', scrollToBottom);
+        });
+    </script>
+</body>
+</html>

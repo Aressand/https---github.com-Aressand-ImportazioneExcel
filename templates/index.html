@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Importazioni Excel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-stats {
+            transition: transform 0.3s;
+        }
+        .card-stats:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #4e73df, #224abe);
+        }
+        .bg-gradient-success {
+            background: linear-gradient(45deg, #1cc88a, #169b6b);
+        }
+        .bg-gradient-info {
+            background: linear-gradient(45deg, #36b9cc, #258391);
+        }
+        .bg-gradient-warning {
+            background: linear-gradient(45deg, #f6c23e, #dda20a);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-5 d-none d-sm-inline">Gestione Importazioni</span>
+                    </a>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link align-middle px-0 text-white">
+                                <i class="fs-4 fas fa-tachometer-alt"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/nuova-importazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-file-import"></i> <span class="ms-1 d-none d-sm-inline">Nuova Importazione</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/importazioni" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-history"></i> <span class="ms-1 d-none d-sm-inline">Storico Importazioni</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/stato-processi" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-tasks"></i> <span class="ms-1 d-none d-sm-inline">Processi Attivi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/configurazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-cogs"></i> <span class="ms-1 d-none d-sm-inline">Configurazione</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Contenuto principale -->
+            <div class="col py-3">
+                <h1 class="h3 mb-4 text-gray-800">Dashboard</h1>
+                
+                <!-- Statistiche principali -->
+                <div class="row">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2 card-stats">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            Righe Totali</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_rows|default(0)|int }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-database fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2 card-stats">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            Importo Totale (€)</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_amount|default(0)|round(2) }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2 card-stats">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Ultimo Periodo</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            N/D
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2 card-stats">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Azioni Rapide</div>
+                                        <a href="/nuova-importazione" class="btn btn-sm btn-primary">Nuova Importazione</a>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-fast-forward fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Riga con grafici -->
+                <div class="row">
+                    <!-- Grafico dati per periodo -->
+                    <div class="col-xl-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Righe per Periodo</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <canvas id="periodChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grafico dati per natura -->
+                    <div class="col-xl-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Righe per Natura</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <canvas id="naturaChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    
+    <script>
+        // Dati per il grafico dei periodi
+        const periodData = {
+            labels: [],
+            datasets: [{
+                label: 'Numero Righe',
+                data: [],
+                backgroundColor: 'rgba(78, 115, 223, 0.2)',
+                borderColor: 'rgba(78, 115, 223, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Dati per il grafico delle nature
+        const naturaData = {
+            labels: [],
+            datasets: [{
+                label: 'Numero Righe',
+                data: [],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        // Inizializza i grafici
+        window.addEventListener('DOMContentLoaded', (event) => {
+            // Grafico dei periodi
+            const periodCtx = document.getElementById('periodChart').getContext('2d');
+            const periodChart = new Chart(periodCtx, {
+                type: 'bar',
+                data: periodData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Grafico delle nature
+            const naturaCtx = document.getElementById('naturaChart').getContext('2d');
+            const naturaChart = new Chart(naturaCtx, {
+                type: 'pie',
+                data: naturaData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+</body>
+</html>

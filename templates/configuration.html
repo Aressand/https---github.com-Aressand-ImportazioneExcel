@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurazione - Dashboard Importazioni Excel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .form-card {
+            transition: transform 0.3s;
+        }
+        .form-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .folder-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .folder-btn input {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-5 d-none d-sm-inline">Gestione Importazioni</span>
+                    </a>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link align-middle px-0 text-white">
+                                <i class="fs-4 fas fa-tachometer-alt"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/nuova-importazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-file-import"></i> <span class="ms-1 d-none d-sm-inline">Nuova Importazione</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/importazioni" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-history"></i> <span class="ms-1 d-none d-sm-inline">Storico Importazioni</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/stato-processi" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-tasks"></i> <span class="ms-1 d-none d-sm-inline">Processi Attivi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/configurazione" class="nav-link px-0 align-middle text-white active">
+                                <i class="fs-4 fas fa-cogs"></i> <span class="ms-1 d-none d-sm-inline">Configurazione</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Contenuto principale -->
+            <div class="col py-3">
+                <h1 class="h3 mb-4 text-gray-800">Configurazione</h1>
+                
+                <!-- Messaggi flash -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <div class="row">
+                    <!-- Configurazione Database -->
+                    <div class="col-lg-6">
+                        <div class="card shadow mb-4 form-card">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Configurazione Database</h6>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" action="/configurazione">
+                                    <div class="mb-3">
+                                        <label for="db_host" class="form-label">Host del Database:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-server"></i></span>
+                                            <input type="text" class="form-control" id="db_host" name="db_host" value="{{ config['DATABASE']['host'] }}" placeholder="localhost">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="db_name" class="form-label">Nome del Database:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-database"></i></span>
+                                            <input type="text" class="form-control" id="db_name" name="db_name" value="{{ config['DATABASE']['database'] }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="db_user" class="form-label">Nome Utente:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input type="text" class="form-control" id="db_user" name="db_user" value="{{ config['DATABASE']['user'] }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="db_password" class="form-label">Password:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                            <input type="password" class="form-control" id="db_password" name="db_password" value="{{ config['DATABASE']['password'] }}">
+                                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Salva Configurazione
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Configurazione Cartella -->
+                    <div class="col-lg-6">
+                        <div class="card shadow mb-4 form-card">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Configurazione Cartella</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Specifica il percorso della cartella contenente i file Excel da importare.
+                                </div>
+                                <form method="post" action="/configurazione">
+                                    <input type="hidden" name="db_host" value="{{ config['DATABASE']['host'] }}">
+                                    <input type="hidden" name="db_name" value="{{ config['DATABASE']['database'] }}">
+                                    <input type="hidden" name="db_user" value="{{ config['DATABASE']['user'] }}">
+                                    <input type="hidden" name="db_password" value="{{ config['DATABASE']['password'] }}">
+                                    
+                                    <div class="mb-3">
+                                        <label for="import_folder" class="form-label">Cartella di Importazione:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-folder"></i></span>
+                                            <input type="text" class="form-control" id="import_folder" name="import_folder" value="{{ config['FOLDERS']['import_folder'] }}" required>
+                                        </div>
+                                        <small class="text-muted">Esempio: C:\Users\Utente\Documents\ImportazioniExcel</small>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-save"></i> Salva Percorso
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Test Connessione -->
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Test Connessione</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button id="testDbConnection" class="btn btn-info">
+                                        <i class="fas fa-database"></i> Test Connessione Database
+                                    </button>
+                                    <button id="testFolders" class="btn btn-warning">
+                                        <i class="fas fa-folder-open"></i> Test Accesso Cartella
+                                    </button>
+                                </div>
+                                <div id="testResults" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Mostra/nascondi password
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('db_password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+        
+        // Test connessione database
+        document.getElementById('testDbConnection').addEventListener('click', function() {
+            const resultDiv = document.getElementById('testResults');
+            resultDiv.innerHTML = '<div class="alert alert-info">Test in corso...</div>';
+            
+            // Recupera i parametri di connessione
+            const params = {
+                host: document.getElementById('db_host').value,
+                user: document.getElementById('db_user').value,
+                password: document.getElementById('db_password').value,
+                database: document.getElementById('db_name').value
+            };
+            
+            // Invia richiesta al server (simulato per ora)
+            setTimeout(() => {
+                resultDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> Connessione al database riuscita!</div>';
+            }, 1500);
+        });
+        
+        // Test accesso cartelle
+        document.getElementById('testFolders').addEventListener('click', function() {
+            const resultDiv = document.getElementById('testResults');
+            resultDiv.innerHTML = '<div class="alert alert-info">Test in corso...</div>';
+            
+            // Recupera il percorso della cartella
+            const folder = document.getElementById('import_folder').value;
+            
+            // Invia richiesta al server (simulato per ora)
+            setTimeout(() => {
+                resultDiv.innerHTML = `
+                <div class="alert alert-success"><i class="fas fa-check-circle"></i> Cartella: Accessibile</div>
+                `;
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuova Importazione - Dashboard Importazioni Excel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card {
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-5 d-none d-sm-inline">Gestione Importazioni</span>
+                    </a>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link align-middle px-0 text-white">
+                                <i class="fs-4 fas fa-tachometer-alt"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/nuova-importazione" class="nav-link px-0 align-middle text-white active">
+                                <i class="fs-4 fas fa-file-import"></i> <span class="ms-1 d-none d-sm-inline">Nuova Importazione</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/importazioni" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-history"></i> <span class="ms-1 d-none d-sm-inline">Storico Importazioni</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/stato-processi" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-tasks"></i> <span class="ms-1 d-none d-sm-inline">Processi Attivi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/configurazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-cogs"></i> <span class="ms-1 d-none d-sm-inline">Configurazione</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Contenuto principale -->
+            <div class="col py-3">
+                <h1 class="h3 mb-4 text-gray-800">Nuova Importazione</h1>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-primary">Seleziona tipo di importazione</h6>
+                    </div>
+                    <div class="card-body">
+                        <form id="importForm" method="post" action="/nuova-importazione">
+                            <input type="hidden" id="import_type" name="import_type" value="">
+                            
+                            <div class="row justify-content-center">
+                                <!-- Importazione Iniziale -->
+                                <div class="col-lg-4">
+                                    <div class="card mb-4">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-database fa-3x mb-3 text-primary"></i>
+                                            <h5 class="text-primary">Importazione Cartella</h5>
+                                            <p class="text-muted">Importa tutti i file Excel presenti nella cartella configurata.</p>
+                                            <button type="button" class="btn btn-primary" onclick="setImportType('folder')">Seleziona</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- File Specifico -->
+                                <div class="col-lg-4">
+                                    <div class="card mb-4">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-excel fa-3x mb-3 text-info"></i>
+                                            <h5 class="text-info">File Specifico</h5>
+                                            <p class="text-muted">Seleziona manualmente un file Excel da importare.</p>
+                                            <button type="button" class="btn btn-info" onclick="setImportType('file')">Seleziona</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sezione per il file specifico (inizialmente nascosta) -->
+                            <div id="specificFileSection" style="display: none;" class="mt-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="m-0 font-weight-bold text-primary">Seleziona il file</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-8">
+                                                <label for="file_path" class="form-label">Percorso completo del file Excel:</label>
+                                                <input type="text" class="form-control" id="file_path" name="file_path" placeholder="C:/percorso/al/file.xlsx">
+                                                <small class="text-muted">Esempio: C:/Utenti/nome/Documenti/file.xlsx</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Pulsante di avvio (inizialmente disabilitato) -->
+                            <div class="text-center mt-4">
+                                <button type="submit" id="startImportBtn" class="btn btn-lg btn-primary" disabled>
+                                    <i class="fas fa-play-circle"></i> Avvia Importazione
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function setImportType(type) {
+            // Imposta il tipo di importazione nel campo nascosto
+            document.getElementById('import_type').value = type;
+            
+            // Mostra/nascondi la sezione del file specifico
+            if (type === 'file') {
+                document.getElementById('specificFileSection').style.display = 'block';
+            } else {
+                document.getElementById('specificFileSection').style.display = 'none';
+            }
+            
+            // Abilita il pulsante di avvio
+            document.getElementById('startImportBtn').disabled = false;
+        }
+    </script>
+</body>
+</html>

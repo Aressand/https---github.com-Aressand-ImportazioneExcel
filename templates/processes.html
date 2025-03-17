@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processi Attivi - Dashboard Importazioni Excel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .process-card {
+            transition: all 0.3s;
+        }
+        .process-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .badge-running {
+            background-color: #4e73df;
+        }
+        .badge-completed {
+            background-color: #1cc88a;
+        }
+        .badge-failed {
+            background-color: #e74a3b;
+        }
+        .process-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        .progress {
+            height: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-5 d-none d-sm-inline">Gestione Importazioni</span>
+                    </a>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link align-middle px-0 text-white">
+                                <i class="fs-4 fas fa-tachometer-alt"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/nuova-importazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-file-import"></i> <span class="ms-1 d-none d-sm-inline">Nuova Importazione</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/importazioni" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-history"></i> <span class="ms-1 d-none d-sm-inline">Storico Importazioni</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/stato-processi" class="nav-link px-0 align-middle text-white active">
+                                <i class="fs-4 fas fa-tasks"></i> <span class="ms-1 d-none d-sm-inline">Processi Attivi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/configurazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-cogs"></i> <span class="ms-1 d-none d-sm-inline">Configurazione</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Contenuto principale -->
+            <div class="col py-3">
+                <h1 class="h3 mb-4 text-gray-800">Processi Attivi</h1>
+                
+                <!-- Informazioni sui processi -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Monitoraggio Processi</h6>
+                        <div>
+                            <button id="refreshBtn" class="btn btn-sm btn-primary">
+                                <i class="fas fa-sync-alt"></i> Aggiorna
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="processList">
+                            {% if not processes %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Nessun processo attivo al momento.
+                                </div>
+                            {% else %}
+                                <div class="row">
+                                    {% for process_id, process in processes.items() %}
+                                        <div class="col-lg-6 mb-4">
+                                            <div class="card process-card">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        {% if process.type == 'initial' %}
+                                                            <i class="fas fa-database process-icon text-primary"></i>
+                                                        {% elif process.type == 'monthly' %}
+                                                            <i class="fas fa-calendar-alt process-icon text-success"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-file-excel process-icon text-info"></i>
+                                                        {% endif %}
+                                                        <span class="font-weight-bold">{{ process.type|capitalize }}</span>
+                                                    </div>
+                                                    <div>
+                                                        {% if process.status == 'running' %}
+                                                            <span class="badge bg-primary">In Esecuzione</span>
+                                                        {% elif process.status == 'completed' %}
+                                                            <span class="badge bg-success">Completato</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Fallito</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h5 class="card-title">ID: {{ process_id }}</h5>
+                                                    <p class="card-text">
+                                                        <strong>Inizio:</strong> {{ process.start_time }}<br>
+                                                        {% if process.end_time %}
+                                                            <strong>Fine:</strong> {{ process.end_time }}<br>
+                                                        {% endif %}
+                                                    </p>
+                                                    
+                                                    {% if process.status == 'running' %}
+                                                        <div class="progress mb-3">
+                                                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    <div class="d-grid">
+                                                        <a href="/stato-processo/{{ process_id }}" class="btn btn-info btn-sm">
+                                                            <i class="fas fa-eye"></i> Dettagli
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card informativa -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Informazioni</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-info-circle text-info"></i> Gestione Processi</h5>
+                                <ul>
+                                    <li>I processi vengono eseguiti in background</li>
+                                    <li>È possibile avviare più processi contemporaneamente</li>
+                                    <li>I processi completati rimangono visibili fino al riavvio dell'applicazione</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-lightbulb text-warning"></i> Suggerimenti</h5>
+                                <ul>
+                                    <li>Utilizza la pagina di dettaglio per vedere l'output del processo</li>
+                                    <li>Se un processo fallisce, controlla i log per maggiori informazioni</li>
+                                    <li>L'importazione iniziale potrebbe richiedere molto tempo</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Aggiorna la lista dei processi ogni 5 secondi
+        $(document).ready(function() {
+            setInterval(refreshProcessList, 5000);
+            
+            $('#refreshBtn').click(function() {
+                refreshProcessList();
+            });
+        });
+        
+        function refreshProcessList() {
+            $.ajax({
+                url: '/api/processi',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (Object.keys(data).length === 0) {
+                        $('#processList').html(`
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Nessun processo attivo al momento.
+                            </div>
+                        `);
+                    } else {
+                        let html = '<div class="row">';
+                        
+                        for (const [processId, process] of Object.entries(data)) {
+                            let iconClass = 'fas fa-file-excel';
+                            let iconColor = 'text-info';
+                            
+                            if (process.type === 'initial') {
+                                iconClass = 'fas fa-database';
+                                iconColor = 'text-primary';
+                            } else if (process.type === 'monthly') {
+                                iconClass = 'fas fa-calendar-alt';
+                                iconColor = 'text-success';
+                            }
+                            
+                            let statusBadge = '';
+                            if (process.status === 'running') {
+                                statusBadge = '<span class="badge bg-primary">In Esecuzione</span>';
+                            } else if (process.status === 'completed') {
+                                statusBadge = '<span class="badge bg-success">Completato</span>';
+                            } else {
+                                statusBadge = '<span class="badge bg-danger">Fallito</span>';
+                            }
+                            
+                            let progressBar = '';
+                            if (process.status === 'running') {
+                                progressBar = `
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                `;
+                            }
+                            
+                            html += `
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card process-card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="${iconClass} process-icon ${iconColor}"></i>
+                                                <span class="font-weight-bold">${process.type.charAt(0).toUpperCase() + process.type.slice(1)}</span>
+                                            </div>
+                                            <div>
+                                                ${statusBadge}
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">ID: ${processId}</h5>
+                                            <p class="card-text">
+                                                <strong>Inizio:</strong> ${process.start_time}<br>
+                                                ${process.end_time ? `<strong>Fine:</strong> ${process.end_time}<br>` : ''}
+                                            </p>
+                                            
+                                            ${progressBar}
+                                            
+                                            <div class="d-grid">
+                                                <a href="/stato-processo/${processId}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i> Dettagli
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        html += '</div>';
+                        $('#processList').html(html);
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

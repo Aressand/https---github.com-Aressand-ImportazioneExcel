@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storico Importazioni - Dashboard Importazioni Excel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        .badge-success {
+            background-color: #1cc88a;
+        }
+        .badge-danger {
+            background-color: #e74a3b;
+        }
+        .badge-warning {
+            background-color: #f6c23e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-5 d-none d-sm-inline">Gestione Importazioni</span>
+                    </a>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link align-middle px-0 text-white">
+                                <i class="fs-4 fas fa-tachometer-alt"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/nuova-importazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-file-import"></i> <span class="ms-1 d-none d-sm-inline">Nuova Importazione</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/importazioni" class="nav-link px-0 align-middle text-white active">
+                                <i class="fs-4 fas fa-history"></i> <span class="ms-1 d-none d-sm-inline">Storico Importazioni</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/stato-processi" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-tasks"></i> <span class="ms-1 d-none d-sm-inline">Processi Attivi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/configurazione" class="nav-link px-0 align-middle text-white">
+                                <i class="fs-4 fas fa-cogs"></i> <span class="ms-1 d-none d-sm-inline">Configurazione</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Contenuto principale -->
+            <div class="col py-3">
+                <h1 class="h3 mb-4 text-gray-800">Storico Importazioni</h1>
+                
+                <!-- Card della tabella -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Elenco delle importazioni</h6>
+                        <div class="dropdown no-arrow">
+                            <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="dropdownMenuButton"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-download fa-sm"></i> Esporta
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                <li><a class="dropdown-item" href="#" id="exportCSV"><i class="fas fa-file-csv fa-sm text-gray-400"></i> CSV</a></li>
+                                <li><a class="dropdown-item" href="#" id="exportExcel"><i class="fas fa-file-excel fa-sm text-gray-400"></i> Excel</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="historyTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>File</th>
+                                        <th>Cartella</th>
+                                        <th>Data Importazione</th>
+                                        <th>Righe</th>
+                                        <th>Stato</th>
+                                        <th>Tempo (s)</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in history %}
+                                    <tr>
+                                        <td>{{ entry.id }}</td>
+                                        <td>{{ entry.filename }}</td>
+                                        <td>{{ entry.folder_path }}</td>
+                                        <td>{{ entry.import_date }}</td>
+                                        <td>{{ entry.row_count }}</td>
+                                        <td>
+                                            {% if entry.status == 'success' %}
+                                                <span class="badge bg-success">Successo</span>
+                                            {% elif entry.status == 'error' %}
+                                                <span class="badge bg-danger">Errore</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Parziale</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ "%.2f"|format(entry.execution_time) }}</td>
+                                        <td>
+                                            {% if entry.status == 'error' %}
+                                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#errorModal{{ entry.id }}">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </button>
+
+                                                <!-- Modal per visualizzare l'errore -->
+                                                <div class="modal fade" id="errorModal{{ entry.id }}" tabindex="-1" aria-labelledby="errorModalLabel{{ entry.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="errorModalLabel{{ entry.id }}">Dettaglio Errore - {{ entry.filename }}</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <pre class="bg-light p-3">{{ entry.error_message }}</pre>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card delle statistiche -->
+                <div class="row">
+                    <!-- Statistiche sui tempi -->
+                    <div class="col-xl-6 col-md-6">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                            Statistiche Temporali
+                                        </div>
+                                        <ul class="mt-3">
+                                            {% set total_time = 0 %}
+                                            {% set count = 0 %}
+                                            {% set max_time = 0 %}
+                                            {% set min_time = 99999 %}
+                                            {% for entry in history if entry.status == 'success' %}
+                                                {% set total_time = total_time + entry.execution_time %}
+                                                {% set count = count + 1 %}
+                                                {% set max_time = max_time if max_time > entry.execution_time else entry.execution_time %}
+                                                {% set min_time = min_time if min_time < entry.execution_time else entry.execution_time %}
+                                            {% endfor %}
+                                            {% set avg_time = total_time / count if count > 0 else 0 %}
+                                            
+                                            <li>Tempo medio di importazione: <b>{{ "%.2f"|format(avg_time) }} secondi</b></li>
+                                            <li>Tempo massimo: <b>{{ "%.2f"|format(max_time) }} secondi</b></li>
+                                            <li>Tempo minimo: <b>{{ "%.2f"|format(min_time if min_time < 99999 else 0) }} secondi</b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistiche sui risultati -->
+                    <div class="col-xl-6 col-md-6">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            Statistiche di Risultato
+                                        </div>
+                                        <ul class="mt-3">
+                                            {% set total_success = 0 %}
+                                            {% set total_error = 0 %}
+                                            {% set total_rows = 0 %}
+                                            {% for entry in history %}
+                                                {% if entry.status == 'success' %}
+                                                    {% set total_success = total_success + 1 %}
+                                                {% elif entry.status == 'error' %}
+                                                    {% set total_error = total_error + 1 %}
+                                                {% endif %}
+                                                {% set total_rows = total_rows + entry.row_count %}
+                                            {% endfor %}
+                                            
+                                            <li>Importazioni riuscite: <b>{{ total_success }}</b></li>
+                                            <li>Importazioni fallite: <b>{{ total_error }}</b></li>
+                                            <li>Totale righe importate: <b>{{ total_rows }}</b></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-chart-bar fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <script>
+        // Inizializza DataTables
+        $(document).ready(function() {
+            $('#historyTable').DataTable({
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/it-IT.json'
+                },
+                order: [[3, 'desc']], // Ordina per data importazione (discendente)
+                pageLength: 25
+            });
+            
+            // Esportazione CSV
+            $('#exportCSV').click(function() {
+                exportTableToCSV('storico_importazioni.csv');
+            });
+            
+            // Esportazione Excel (in realtà CSV con estensione xls)
+            $('#exportExcel').click(function() {
+                exportTableToCSV('storico_importazioni.xls');
+            });
+        });
+        
+                    // Funzione per esportare la tabella in CSV
+        function exportTableToCSV(filename) {
+            var csv = [];
+            var rows = document.querySelectorAll('table tr');
+            
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                for (var j = 0; j < cols.length; j++) {
+                    // Estrai il testo senza formattazione e sostituisci eventuali virgole
+                    let text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, ' ').replace(/,/g, ';');
+                    
+                    // Ignora la colonna delle azioni
+                    if (j != 7) {
+                        // Se contiene testo con spazi, racchiudi in virgolette
+                        row.push('"' + text + '"');
+                    }
+                }
+                csv.push(row.join(','));
+            }
+            
+            // Scarica il file CSV
+            downloadCSV(csv.join('\n'), filename);
+        }
+        
+        // Funzione per scaricare il CSV
+        function downloadCSV(csv, filename) {
+            var csvFile = new Blob([csv], {type: 'text/csv'});
+            var downloadLink = document.createElement('a');
+            
+            // Nome del file
+            downloadLink.download = filename;
+            
+            // Crea un URL per il file
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            
+            // Assicurati che il link sia invisibile
+            downloadLink.style.display = 'none';
+            
+            // Aggiungi il link al DOM
+            document.body.appendChild(downloadLink);
+            
+            // Clicca sul link per avviare il download
+            downloadLink.click();
+            
+            // Rimuovi il link dal DOM
+            document.body.removeChild(downloadLink);
+        }
+    </script>
+</body>
+</html>
+                
