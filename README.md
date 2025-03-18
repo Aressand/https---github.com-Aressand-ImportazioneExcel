@@ -1,125 +1,170 @@
-# Interfaccia Web per Importazione File Excel
+# Sistema di Importazione Dati Excel in MySQL
 
-Questa applicazione fornisce un'interfaccia web completa per gestire l'importazione di file Excel in un database MySQL centralizzato. L'interfaccia permette di eseguire, monitorare e tenere traccia di tutte le operazioni di importazione.
+Un'applicazione web Python per importare, gestire e monitorare dati da file Excel in un database MySQL centralizzato.
 
-## Caratteristiche principali
+## 📋 Caratteristiche
 
-- **Dashboard**: Visualizzazione delle statistiche principali e grafici
-- **Importazione facilitata**: Interfaccia grafica per l'importazione iniziale e mensile
-- **Monitoraggio in tempo reale**: Visualizzazione dello stato dei processi in esecuzione
-- **Storico importazioni**: Elenco completo di tutte le importazioni effettuate
-- **Configurazione semplice**: Gestione delle impostazioni di database e cartelle
+- Importazione di file Excel singoli o di intere cartelle
+- Importazione mensile di nuovi file
+- Dashboard interattiva per visualizzare statistiche
+- Monitoraggio in tempo reale dei processi di importazione
+- Storico completo delle importazioni effettuate
+- Configurazione facile tramite interfaccia web
 
-## Requisiti di sistema
+## 🔧 Prerequisiti
 
 - Python 3.6 o superiore
 - MySQL Server
-- Web browser moderno
+- Browser web moderno
 
-## Installazione
+## 📦 Librerie Python richieste
 
-### 1. Clona o scarica il progetto
+```
+pandas
+numpy
+mysql-connector-python
+tqdm
+openpyxl
+flask
+```
+
+## 🚀 Installazione
+
+1. Clona il repository:
+   ```bash
+   git clone https://github.com/tuousername/excel-import-system.git
+   cd excel-import-system
+   ```
+
+2. Crea e attiva un ambiente virtuale:
+   ```bash
+   python -m venv venv
+   
+   # Windows
+   venv\Scripts\activate
+   
+   # Linux/Mac
+   source venv/bin/activate
+   ```
+
+3. Installa le dipendenze:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Crea il database MySQL:
+   ```bash
+   mysql -u root -p
+   ```
+   ```sql
+   CREATE DATABASE importazioni_excel;
+   ```
+
+5. Crea le tabelle necessarie:
+   ```bash
+   mysql -u root -p importazioni_excel < database-schema.sql
+   ```
+
+6. Configura l'applicazione modificando il file `config.ini` con i tuoi dati:
+   ```ini
+   [DATABASE]
+   host = localhost
+   user = tuousername
+   password = tuapassword
+   database = importazioni_excel
+
+   [FOLDERS]
+   import_folder = /percorso/alla/tua/cartella
+
+   [WEB]
+   port = 5000
+   debug = False
+   ```
+
+## 💻 Utilizzo
+
+### Avviare l'interfaccia web
 
 ```bash
-git clone [url-repository]
-cd [directory-progetto]
+python web-interface.py
 ```
 
-### 2. Esegui lo script di setup
+Poi apri un browser e vai a `http://localhost:5000`
 
+### Importazione iniziale di tutti i file
+
+Per importare tutti i file Excel presenti in una cartella:
+
+1. Vai alla pagina "Nuova Importazione"
+2. Seleziona "Importazione Cartella"
+3. Fai clic su "Avvia Importazione"
+
+### Importazione di un file specifico
+
+1. Vai alla pagina "Nuova Importazione"
+2. Seleziona "File Specifico"
+3. Inserisci il percorso completo del file
+4. Fai clic su "Avvia Importazione"
+
+### Importazione mensile
+
+Per importare i nuovi file mensili:
+
+1. Vai alla pagina "Nuova Importazione"
+2. Seleziona "Importazione Cartella" (assicurati che la cartella configurata contenga i nuovi file mensili)
+3. Fai clic su "Avvia Importazione"
+
+## 📊 Struttura del progetto
+
+```
+excel-import-system/
+├── database-schema.sql        # Schema del database
+├── import-script.py           # Script per l'importazione singola
+├── monthly-import-script.py   # Script per l'importazione mensile
+├── web-interface.py           # Interfaccia web per la gestione
+├── config.ini                 # File di configurazione
+├── templates/                 # Template HTML per l'interfaccia web
+├── requirements.txt           # Dipendenze Python
+└── README.md                  # Questo file
+```
+
+## ⚠️ Note importanti
+
+- L'importazione di grandi volumi di file (>10) potrebbe richiedere molto tempo e risorse
+- Si consiglia di importare file in batch più piccoli per evitare problemi di memoria
+- Assicurati di avere backup regolari del database
+- I file di log possono essere eliminati periodicamente senza problemi
+
+## 🔍 Risoluzione dei problemi
+
+### Errore "No module named 'pandas'"
+
+Assicurati che:
+1. L'ambiente virtuale sia attivato
+2. Le dipendenze siano installate: `pip install -r requirements.txt`
+3. Se usi l'interfaccia web, modificare `web-interface.py` per utilizzare `sys.executable` invece di `python`
+
+### Errore "Table doesn't exist"
+
+Esegui lo script SQL per creare le tabelle:
 ```bash
-python setup-web-interface.py --db-user nome_utente --db-password password_mysql --db-name nome_database --folder1 /percorso/cartella1 --folder2 /percorso/cartella2 --folder3 /percorso/cartella3
+mysql -u root -p importazioni_excel < database-schema.sql
 ```
 
-Parametri disponibili:
-- `--db-host`: Host del database MySQL (default: localhost)
-- `--db-user`: Nome utente MySQL
-- `--db-password`: Password MySQL
-- `--db-name`: Nome del database MySQL
-- `--folder1`: Percorso della prima cartella
-- `--folder2`: Percorso della seconda cartella
-- `--folder3`: Percorso della terza cartella
-- `--port`: Porta su cui eseguire l'applicazione web (default: 5000)
+### L'importazione si blocca dopo alcuni file
 
-### 3. Crea le tabelle nel database
+1. Prova a importare meno file alla volta
+2. Assicurati di avere sufficiente memoria disponibile
+3. Verifica che i file Excel siano validi e non corrotti
 
-```bash
-mysql -u nome_utente -p nome_database < schema.sql
-```
+## 📝 Licenza
 
-### 4. Avvia l'applicazione
+[MIT](LICENSE)
 
-Su Windows:
-```
-start.bat
-```
+## 👤 Autori
 
-Su Linux/macOS:
-```
-./start.sh
-```
+- Il tuo nome
 
-L'interfaccia web sarà disponibile all'indirizzo `http://localhost:5000`
+## 🙏 Ringraziamenti
 
-## Struttura dell'interfaccia
-
-### Dashboard
-La dashboard fornisce una panoramica delle statistiche principali:
-- Numero totale di righe nel database
-- Importo totale
-- Grafici di distribuzione per periodo e natura
-- Pulsanti per azioni rapide
-
-### Nuova Importazione
-Permette di avviare nuove importazioni con tre modalità:
-- **Importazione Iniziale**: Importa tutti i file Excel presenti nelle 3 cartelle configurate
-- **Importazione Mensile**: Importa automaticamente i 3 file più recenti (uno per cartella)
-- **File Specifici**: Permette di specificare manualmente i 3 file da importare
-
-### Storico Importazioni
-Visualizza un elenco completo di tutte le importazioni effettuate con:
-- Nome file e cartella
-- Data e ora di importazione
-- Numero di righe importate
-- Stato (successo, errore, parziale)
-- Tempo di esecuzione
-- Dettagli degli errori (se presenti)
-
-### Processi Attivi
-Mostra lo stato di tutti i processi di importazione in esecuzione o completati:
-- Tipo di importazione
-- Stato attuale
-- Orario di inizio e fine
-- Link alla pagina di dettaglio con output in tempo reale
-
-### Configurazione
-Permette di gestire:
-- Impostazioni di connessione al database MySQL
-- Percorsi delle cartelle contenenti i file Excel
-- Test di connessione al database e accessibilità delle cartelle
-
-## Personalizzazione
-È possibile personalizzare l'interfaccia web modificando i seguenti file:
-- `config.ini`: Configurazione generale dell'applicazione
-- `templates/`: File HTML per le pagine dell'interfaccia
-- `static/`: File CSS e JavaScript per lo stile e le funzionalità aggiuntive
-
-## Risoluzione problemi
-
-### Errori di connessione al database
-1. Verifica che il server MySQL sia in esecuzione
-2. Controlla le credenziali nel file `config.ini`
-3. Assicurati che il database esista e che l'utente abbia i permessi necessari
-
-### Errori di importazione
-1. Verifica che le cartelle configurate siano accessibili
-2. Controlla che i file Excel abbiano l'estensione `.xlsx`
-3. Assicurati che la struttura dei file sia compatibile con lo schema del database
-
-### Problemi con l'interfaccia web
-1. Controlla i log dell'applicazione in `web_interface.log`
-2. Verifica che la porta configurata (default: 5000) sia disponibile
-3. Assicurati di utilizzare un browser web aggiornato
-
-## Supporto
-Per assistenza o segnalazione di problemi, contatta l'amministratore di sistema.
+Questo progetto è stato creato per semplificare il flusso di lavoro di importazione dati ed è in continua evoluzione.
