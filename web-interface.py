@@ -261,7 +261,7 @@ def new_import():
         if import_type == 'folder':
             # Importazione dalla cartella completa
             folder = config['FOLDERS']['import_folder']
-            command = ['python', 'import-script.py', 
+            command = [ sys.executable, 'import-script.py', 
                       '--user', config['DATABASE']['user'], 
                       '--password', config['DATABASE']['password'], 
                       '--database', config['DATABASE']['database'], 
@@ -278,7 +278,7 @@ def new_import():
                 flash('Devi specificare un file', 'error')
                 return render_template('new_import.html')
             
-            command = ['python', 'import-script.py', 
+            command = [ sys.executable, 'import-script.py', 
                       '--user', config['DATABASE']['user'], 
                       '--password', config['DATABASE']['password'], 
                       '--database', config['DATABASE']['database'], 

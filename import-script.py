@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#C:\Users\Utente\Desktop\ImportazioneExcel\venv\Scripts\python.exe
 # -*- coding: utf-8 -*-
 
 """
