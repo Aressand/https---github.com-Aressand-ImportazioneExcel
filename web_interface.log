@@ -642,3 +642,16 @@
 2025-03-17 17:42:55,029 - WARNING -  * Debugger is active!
 2025-03-17 17:42:55,032 - INFO -  * Debugger PIN: 386-157-911
 2025-03-17 17:42:55,470 - INFO - 127.0.0.1 - - [17/Mar/2025 17:42:55] "GET /nuova-importazione HTTP/1.1" 200 -
+2025-03-17 17:43:01,224 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.23:5000
+2025-03-17 17:43:01,224 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-17 17:43:01,230 - INFO -  * Restarting with stat
+2025-03-17 17:43:01,575 - WARNING -  * Debugger is active!
+2025-03-17 17:43:01,578 - INFO -  * Debugger PIN: 386-157-911
+2025-03-17 17:43:02,544 - INFO - 127.0.0.1 - - [17/Mar/2025 17:43:02] "GET /nuova-importazione HTTP/1.1" 200 -
+2025-03-17 17:43:04,840 - INFO - 127.0.0.1 - - [17/Mar/2025 17:43:04] "[32mPOST /nuova-importazione HTTP/1.1[0m" 302 -
+2025-03-17 17:43:04,858 - INFO - 127.0.0.1 - - [17/Mar/2025 17:43:04] "GET /stato-processo/folder_1742229784 HTTP/1.1" 200 -
+2025-03-17 17:43:07,910 - INFO - 127.0.0.1 - - [17/Mar/2025 17:43:07] "GET /api/processo/folder_1742229784 HTTP/1.1" 200 -
+2025-03-17 17:43:07,918 - INFO - 127.0.0.1 - - [17/Mar/2025 17:43:07] "GET /stato-processo/folder_1742229784 HTTP/1.1" 200 -
