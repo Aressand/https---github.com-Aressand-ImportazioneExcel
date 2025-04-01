@@ -41,7 +41,7 @@ flask
    python -m venv venv
    
    # Windows
-   venv\Scripts\activate
+   source venv/Scripts/activate
    
    # Linux/Mac
    source venv/bin/activate
