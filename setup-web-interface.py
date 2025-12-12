@@ -82,9 +82,9 @@ def create_schema_file():
     """Crea il file schema.sql per il database"""
     print("Creazione del file schema.sql...")
     
-    schema = """-- Schema per il database delle vendite
+    schema = """-- Schema per il database delle fatture_totali
 -- Tabella principale per i dati di vendita
-CREATE TABLE IF NOT EXISTS vendite (
+CREATE TABLE IF NOT EXISTS fatture_totali (
     id INT AUTO_INCREMENT PRIMARY KEY,
     seq_id VARCHAR(255),
     period VARCHAR(10),

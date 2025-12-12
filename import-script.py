@@ -91,7 +91,7 @@ def process_excel_file(file_path, conn, cursor, existing_files):
         # Crea la query di inserimento
         columns = ', '.join(df.columns)
         placeholders = ', '.join(['%s'] * len(df.columns))
-        insert_query = f"INSERT INTO vendite ({columns}) VALUES ({placeholders})"
+        insert_query = f"INSERT INTO fatture_totali ({columns}) VALUES ({placeholders})"
         
         # Inserisci i dati nel database in batch
         batch_size = 1000

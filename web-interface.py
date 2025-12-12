@@ -197,11 +197,11 @@ def get_database_stats():
         cursor = conn.cursor()
         
         # Conteggio totale delle righe
-        cursor.execute("SELECT COUNT(*) FROM vendite")
+        cursor.execute("SELECT COUNT(*) FROM fatture_totali")
         stats['total_rows'] = cursor.fetchone()[0]
         
         # Importo totale
-        cursor.execute("SELECT SUM(importo) FROM vendite")
+        cursor.execute("SELECT SUM(importo) FROM fatture_totali")
         stats['total_amount'] = cursor.fetchone()[0] or 0
         
         return stats
